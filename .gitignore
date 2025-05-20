@@ -1,0 +1,26 @@
+# Node
+node_modules/
+dist/
+.env
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor configs
+.vscode/
+.idea/
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# MySQL dump temporário (caso exporte localmente)
+*.sql
+
+# Outros
+*.local
+.env.*
