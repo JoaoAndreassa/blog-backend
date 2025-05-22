@@ -60,7 +60,7 @@ JWT_SECRET=uma_chave_muito_secreta, rode no terminal o comando "openssl rand -ba
 ## Banco de dados
 #### O Dump da estrutura do banco esta na pasta database/:
 ```
-mysql -u seu_usuario -p blog < database/dump.sql
+mysql -u seu_usuario -p blog < database/dump/blog-dump.sql
 ```
 
 ## Como rodar o projeto

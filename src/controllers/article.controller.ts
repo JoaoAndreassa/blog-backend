@@ -1,97 +1,69 @@
 import { Request, Response } from "express";
 import {
-	createArticle,
-	getAllArticles,
-	getArticleImage,
-	getArticleById,
-    updateArticle,
-    deleteArticle,
+  createArticle,
+  getAllArticles,
+  getArticleImage,
+  getArticleById,
+  updateArticle,
+  deleteArticle,
 } from "../services/article.service";
+import { AuthRequest } from "../types/express";
 
-export const createArticleController = async (req: Request, res: Response) => {
-	try {
-		const { title, content } = req.body;
-		const imageBuffer = req.file ? req.file.buffer : null;
-		const userId = (req as any).user.id;
+export const createArticleController = async (req: AuthRequest, res: Response) => {
+  const { title, content } = req.body;
+  const imageBuffer = req.file ? req.file.buffer : null;
+  const userId = req.userId!;
 
-		const result = await createArticle(title, content, imageBuffer, userId);
-		res.status(201).json({ message: "Artigo criado com sucesso", result });
-	} catch (error: any) {
-		res.status(500).json({ error: error.message });
-	}
+  const result = await createArticle(title, content, imageBuffer, userId);
+  res.status(201).json({ message: "Artigo criado com sucesso", result });
 };
 
-export const getAllArticlesController = async (
-	_req: Request,
-	res: Response
-) => {
-	try {
-		const articles = await getAllArticles();
-		res.json(articles);
-	} catch (error: any) {
-		res.status(500).json({ error: error.message });
-	}
+export const getAllArticlesController = async (req: Request, res: Response) => {
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 10;
+
+  if (isNaN(page) || isNaN(limit) || page < 1 || limit < 1) {
+    throw new Error("Parâmetros de paginação inválidos");
+  }
+
+  const articles = await getAllArticles(page, limit);
+  res.json(articles);
 };
+
 
 export const getArticleByIdController = async (req: Request, res: Response) => {
-	try {
-		const id = Number(req.params.id);
-		const article = await getArticleById(id);
+  const id = Number(req.params.id);
+  const article = await getArticleById(id);
 
-		if (!article) {
-			res.status(404).json({ error: "Artigo não encontrado" });
-			return;
-		}
+  if (!article) throw new Error("Artigo não encontrado");
 
-		res.json(article);
-	} catch (error: any) {
-		res.status(500).json({ error: error.message });
-	}
+  res.json(article);
 };
 
-export const getArticleImageController = async (
-	req: Request,
-	res: Response
-) => {
-	try {
-		const id = Number(req.params.id);
-		const imageBuffer = await getArticleImage(id);
+export const getArticleImageController = async (req: Request, res: Response) => {
+  const id = Number(req.params.id);
+  const imageBuffer = await getArticleImage(id);
 
-		if (!imageBuffer) {
-			res.status(404).json({ error: "Imagem não encontrada" });
-			return;
-		}
+  if (!imageBuffer) throw new Error("Imagem não encontrada");
 
-		res.setHeader("Content-Type", "image/jpeg");
-		res.send(imageBuffer);
-	} catch (error: any) {
-		res.status(500).json({ error: error.message });
-	}
+  res.setHeader("Content-Type", "image/jpeg");
+  res.send(imageBuffer);
 };
 
-export const updateArticleController = async (req: Request, res: Response) => {
-	try {
-		const articleId = Number(req.params.id);
-		const { title, content } = req.body;
-		const imageBuffer = req.file ? req.file.buffer : null;
-		const userId = (req as any).user.id;
+export const updateArticleController = async (req: AuthRequest, res: Response) => {
+  const articleId = Number(req.params.id);
+  const { title, content } = req.body;
+  const imageBuffer = req.file ? req.file.buffer : null;
+  const userId = req.userId!;
 
-		await updateArticle(articleId, title, content, imageBuffer, userId);
-
-		res.json({ message: "Artigo atualizado com sucesso" });
-	} catch (error: any) {
-		res.status(400).json({ error: error.message });
-	}
+  await updateArticle(articleId, title, content, imageBuffer, userId);
+  res.json({ message: "Artigo atualizado com sucesso" });
 };
-export const deleteArticleController = async (req: Request, res: Response) => {
-  try {
-    const articleId = Number(req.params.id);
-    const userId = (req as any).user.id;
 
-    await deleteArticle(articleId, userId);
+export const deleteArticleController = async (req: AuthRequest, res: Response) => {
+  const articleId = Number(req.params.id);
+  const userId = req.userId!;
 
-    res.json({ message: 'Artigo excluído com sucesso' });
-  } catch (error: any) {
-    res.status(400).json({ error: error.message });
-  }
+  await deleteArticle(articleId, userId);
+  res.json({ message: "Artigo excluído com sucesso" });
 };
